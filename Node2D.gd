@@ -121,57 +121,72 @@ func _tween_eye_center_scale(panel: Panel, duration: float, delay: float, target
 		duration, trans, ease_type, delay)
 	_pending_eye_center_scale[panel] = target_s
 
-func _close_clock(duration: float, delay: float, target: float = 0.0):
-	_tween_scale_y(hours_label, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
-	_tween_scale_y(minutes_label, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+func _close_clock(duration: float, delay: float, target: float = 0.0,
+				  trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	_tween_scale_y(hours_label, duration, delay, target, trans, ease_type)
+	_tween_scale_y(minutes_label, duration, delay, target, trans, ease_type)
 
-func _open_clock(duration: float, delay: float, target: float = 1.0):
-	_tween_scale_y(hours_label, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
-	_tween_scale_y(minutes_label, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+func _open_clock(duration: float, delay: float, target: float = 1.0,
+				 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	_tween_scale_y(hours_label, duration, delay, target, trans, ease_type)
+	_tween_scale_y(minutes_label, duration, delay, target, trans, ease_type)
 
-func _open_left_eye(duration: float, delay: float, target: float = 1.0):
-	_tween_eye_y(left_eye, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+func _open_left_eye(duration: float, delay: float, target: float = 1.0,
+					trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	_tween_eye_y(left_eye, duration, delay, target, trans, ease_type)
 
-func _close_left_eye(duration: float, delay: float, target: float = 0.0):
-	_tween_eye_y(left_eye, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+func _close_left_eye(duration: float, delay: float, target: float = 0.0,
+					 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	_tween_eye_y(left_eye, duration, delay, target, trans, ease_type)
 
-func _open_right_eye(duration: float, delay: float, target: float = 1.0):
-	_tween_eye_y(right_eye, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+func _open_right_eye(duration: float, delay: float, target: float = 1.0,
+					 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	_tween_eye_y(right_eye, duration, delay, target, trans, ease_type)
 
-func _close_right_eye(duration: float, delay: float, target: float = 0.0):
-	_tween_eye_y(right_eye, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+func _close_right_eye(duration: float, delay: float, target: float = 0.0,
+					  trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	_tween_eye_y(right_eye, duration, delay, target, trans, ease_type)
 
-func _open_both_eyes(duration: float, delay: float, target: float = 1.0):
-	_open_left_eye(duration, delay, target)
-	_open_right_eye(duration, delay, target)
+func _open_both_eyes(duration: float, delay: float, target: float = 1.0,
+					 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	_open_left_eye(duration, delay, target, trans, ease_type)
+	_open_right_eye(duration, delay, target, trans, ease_type)
 
-func _close_both_eyes(duration: float, delay: float, target: float = 0.0):
-	_close_left_eye(duration, delay, target)
-	_close_right_eye(duration, delay, target)
+func _close_both_eyes(duration: float, delay: float, target: float = 0.0,
+					  trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	_close_left_eye(duration, delay, target, trans, ease_type)
+	_close_right_eye(duration, delay, target, trans, ease_type)
 
-func _shift_left_eye(duration: float, delay: float, amount: float):
-	_tween_eye_shift(left_eye, duration, delay, amount, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+func _shift_left_eye(duration: float, delay: float, amount: float,
+					 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	_tween_eye_shift(left_eye, duration, delay, amount, trans, ease_type)
 
-func _shift_right_eye(duration: float, delay: float, amount: float):
-	_tween_eye_shift(right_eye, duration, delay, amount, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+func _shift_right_eye(duration: float, delay: float, amount: float,
+					  trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	_tween_eye_shift(right_eye, duration, delay, amount, trans, ease_type)
 
-func _shift_eyes(duration: float, delay: float, amount: float):
-	_shift_left_eye(duration, delay, amount)
-	_shift_right_eye(duration, delay, amount)
+func _shift_eyes(duration: float, delay: float, amount: float,
+				 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	_shift_left_eye(duration, delay, amount, trans, ease_type)
+	_shift_right_eye(duration, delay, amount, trans, ease_type)
 
-func _scale_left_eye(duration: float, delay: float, target: float):
-	_tween_eye_scale(left_eye, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+func _scale_left_eye(duration: float, delay: float, target: float,
+					 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	_tween_eye_scale(left_eye, duration, delay, target, trans, ease_type)
 
-func _scale_right_eye(duration: float, delay: float, target: float):
-	_tween_eye_scale(right_eye, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+func _scale_right_eye(duration: float, delay: float, target: float,
+					  trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	_tween_eye_scale(right_eye, duration, delay, target, trans, ease_type)
 
-func _scale_eyes(duration: float, delay: float, target: float):
-	_scale_left_eye(duration, delay, target)
-	_scale_right_eye(duration, delay, target)
+func _scale_eyes(duration: float, delay: float, target: float,
+				 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	_scale_left_eye(duration, delay, target, trans, ease_type)
+	_scale_right_eye(duration, delay, target, trans, ease_type)
 
-func _scale_eyes_from_center(duration: float, delay: float, target: float):
-	_tween_eye_center_scale(left_eye,  duration, delay, target, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
-	_tween_eye_center_scale(right_eye, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+func _scale_eyes_from_center(duration: float, delay: float, target: float,
+							  trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	_tween_eye_center_scale(left_eye,  duration, delay, target, trans, ease_type)
+	_tween_eye_center_scale(right_eye, duration, delay, target, trans, ease_type)
 
 func _play_blink():
 	tween.stop_all()
@@ -180,15 +195,15 @@ func _play_blink():
 	_pending_eye_center_scale.clear()
 	_pending_eye_shift.clear()
 	_close_clock(0.1, 0.0)
-	_open_left_eye(0.1, 0.1, 0.3)
-	_open_left_eye(1, 0.3, 0.7)
-	_open_both_eyes(0.5, 1.7, 1)
+#	_open_left_eye(0.1, 0.1, 0.3, Tween.TRANS_LINEAR, Tween.EASE_OUT)
+	_open_left_eye(1, 0.3, 0.7, Tween.TRANS_EXPO, Tween.EASE_OUT)
+	_open_both_eyes(0.3, 1.5, 1)
 	_shift_eyes(0.1, 2.1, -40)
 	_shift_eyes(0.2, 3.4, 70)
 	
 	_close_both_eyes(0.1, 3.3)
 	_open_both_eyes(0.1, 3.4, 1)
-	_shift_eyes(0.3, 5, 0)
+	_shift_eyes(0.1, 5, 0)
 	_close_both_eyes(0.1, 5.4)
 	_open_both_eyes(0.1, 5.5, 1)
 	
