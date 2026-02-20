@@ -1,4 +1,4 @@
 [gd_resource type="DynamicFontData" format=2]
 
 [resource]
-font_path = "res://FiraSans-Ultra.ttf"
+font_path = "res://fonts/FiraSans-Ultra.ttf"
