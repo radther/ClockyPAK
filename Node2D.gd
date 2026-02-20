@@ -2,7 +2,7 @@ extends Node2D
 
 const EXIT_BUTTON = 8   # Adjust if your controller uses a different index
 const A_BUTTON = 1
-const B_BUTTON = 2
+const B_BUTTON = 0
 const SELECT_BUTTON = 6  # Adjust if your controller uses a different index
 
 onready var log_label = $Log
@@ -18,6 +18,7 @@ var _pending: Dictionary = {}
 var _pending_eye_own_scale: Dictionary = {}    # Panel -> float (own-center scale, default 1.0)
 var _pending_eye_center_scale: Dictionary = {} # Panel -> float (from-center scale, default 1.0)
 var _pending_eye_shift: Dictionary = {}        # Panel -> float (x pixel offset, default 0.0)
+var _pending_eye_shift_y: Dictionary = {}      # Panel -> float (y pixel offset, default 0.0)
 var _eye_configs: Dictionary = {}              # Panel -> {shift_holder, csh, osh, base_center, full_size}
 var _eye_common_x: float = 0.0                # midpoint between the two eye centers
 
@@ -99,6 +100,15 @@ func _tween_eye_shift(panel: Panel, duration: float, delay: float, target_x: flo
 		base_x + from_x, base_x + target_x, duration, trans, ease_type, delay)
 	_pending_eye_shift[panel] = target_x
 
+func _tween_eye_shift_y(panel: Panel, duration: float, delay: float, target_y: float, trans: int, ease_type: int):
+	var config = _eye_configs[panel]
+	var sh = config.shift_holder
+	var base_y = config.base_center.y
+	var from_y = _pending_eye_shift_y.get(panel, sh.rect_position.y - base_y)
+	tween.interpolate_property(sh, "rect_position:y",
+		base_y + from_y, base_y + target_y, duration, trans, ease_type, delay)
+	_pending_eye_shift_y[panel] = target_y
+
 # Scales each eye around its own center. Runs on osh.rect_scale.
 func _tween_eye_scale(panel: Panel, duration: float, delay: float, target_s: float, trans: int, ease_type: int):
 	var osh = _eye_configs[panel].osh
@@ -171,6 +181,19 @@ func _shift_eyes(duration: float, delay: float, amount: float,
 	_shift_left_eye(duration, delay, amount, trans, ease_type)
 	_shift_right_eye(duration, delay, amount, trans, ease_type)
 
+func _shift_left_eye_y(duration: float, delay: float, amount: float,
+					   trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	_tween_eye_shift_y(left_eye, duration, delay, amount, trans, ease_type)
+
+func _shift_right_eye_y(duration: float, delay: float, amount: float,
+						trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	_tween_eye_shift_y(right_eye, duration, delay, amount, trans, ease_type)
+
+func _shift_eyes_y(duration: float, delay: float, amount: float,
+				   trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	_shift_left_eye_y(duration, delay, amount, trans, ease_type)
+	_shift_right_eye_y(duration, delay, amount, trans, ease_type)
+
 func _scale_left_eye(duration: float, delay: float, target: float,
 					 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	_tween_eye_scale(left_eye, duration, delay, target, trans, ease_type)
@@ -190,12 +213,12 @@ func _scale_eyes_from_center(duration: float, delay: float, target: float,
 	_tween_eye_center_scale(right_eye, duration, delay, target, trans, ease_type)
 
 func _play_peek():
-	yield(get_tree().create_timer(10.0), "timeout")
 	tween.stop_all()
 	_pending.clear()
 	_pending_eye_own_scale.clear()
 	_pending_eye_center_scale.clear()
 	_pending_eye_shift.clear()
+	_pending_eye_shift_y.clear()
 	_close_clock(0.1, 0.0)
 #	_open_left_eye(0.1, 0.1, 0.3, Tween.TRANS_LINEAR, Tween.EASE_OUT)
 	_open_left_eye(1, 0.3, 0.7, Tween.TRANS_EXPO, Tween.EASE_OUT)
@@ -214,28 +237,27 @@ func _play_peek():
 	tween.start()
 	
 func _play_happy():
-	yield(get_tree().create_timer(10.0), "timeout")
 	tween.stop_all()
 	_pending.clear()
 	_pending_eye_own_scale.clear()
 	_pending_eye_center_scale.clear()
 	_pending_eye_shift.clear()
+	_pending_eye_shift_y.clear()
 	_close_clock(0.1, 0.0)
 	_open_both_eyes(0.1, 0.1)
-#	_open_left_eye(0.1, 0.1, 0.3, Tween.TRANS_LINEAR, Tween.EASE_OUT)
-	_open_left_eye(1, 0.3, 0.7, Tween.TRANS_EXPO, Tween.EASE_OUT)
-	_open_both_eyes(0.3, 1.5, 1)
-	_shift_eyes(0.1, 2.1, -40)
-	_shift_eyes(0.2, 3.4, 70)
 	
-	_close_both_eyes(0.1, 3.3)
-	_open_both_eyes(0.1, 3.4, 1)
-	_shift_eyes(0.1, 5, 0)
-	_close_both_eyes(0.1, 5.4)
-	_open_both_eyes(0.1, 5.5, 1)
+	_scale_eyes(0.7, 0.4, 1.4, Tween.TRANS_QUART)
+	_scale_eyes_from_center(0.7, 0.4, 1.2, Tween.TRANS_QUART)
+	_open_both_eyes(0.7, 0.4, 0.2, Tween.TRANS_QUART)
+	_shift_eyes_y(0.8, 0.4, -140, Tween.TRANS_QUART)
 	
-	_close_both_eyes(0.1, 5.6)
-	_open_clock(0.1, 5.7)
+	_scale_eyes(0.7, 2, 1, Tween.TRANS_QUART)
+	_scale_eyes_from_center(0.7, 2, 1, Tween.TRANS_QUART)
+	_open_both_eyes(0.7, 2, 1, Tween.TRANS_QUART)
+	_shift_eyes_y(0.7, 1.95, 0, Tween.TRANS_QUART)
+	
+	_close_both_eyes(0.1, 3)
+	_open_clock(0.1, 3.1)
 	tween.start()
 
 func _input(event):
@@ -245,7 +267,7 @@ func _input(event):
 	elif _isKeyOrButton(event, KEY_B, A_BUTTON):
 		_play_peek()
 	elif _isKeyOrButton(event, KEY_C, B_BUTTON):
-		_play_peek()
+		_play_happy()
 	elif _isKeyOrButton(event, KEY_S, SELECT_BUTTON):
 		log_label.visible = !log_label.visible
 
