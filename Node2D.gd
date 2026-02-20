@@ -2,6 +2,7 @@ extends Node2D
 
 const START_BUTTON = 7  # Adjust if your controller uses a different index
 const A_BUTTON = 1
+const ANIM_DURATION = 0.1
 
 onready var log_label = $Log
 onready var hours_label = $Hours
@@ -21,6 +22,8 @@ func _make_eye(center: Vector2) -> Panel:
 	panel.add_stylebox_override("panel", style)
 	panel.rect_size = Vector2(200, 400)
 	panel.rect_position = center - panel.rect_size / 2
+	panel.rect_pivot_offset = panel.rect_size / 2
+	panel.rect_scale = Vector2(1, 0)  # start hidden
 	add_child(panel)
 	move_child(panel, 0)  # render behind labels
 	return panel
@@ -45,11 +48,17 @@ func _process(_delta):
 func _close_eyes():
 	tween.stop_all()
 	tween.interpolate_property(hours_label, "rect_scale",
-		Vector2(1, 1), Vector2(1, 0), 0.1,
+		Vector2(1, 1), Vector2(1, 0), ANIM_DURATION,
 		Tween.TRANS_SINE, Tween.EASE_IN)
 	tween.interpolate_property(minutes_label, "rect_scale",
-		Vector2(1, 1), Vector2(1, 0), 0.1,
+		Vector2(1, 1), Vector2(1, 0), ANIM_DURATION,
 		Tween.TRANS_SINE, Tween.EASE_IN)
+	tween.interpolate_property(left_eye, "rect_scale",
+		Vector2(1, 0), Vector2(1, 1), ANIM_DURATION,
+		Tween.TRANS_SINE, Tween.EASE_OUT, ANIM_DURATION)
+	tween.interpolate_property(right_eye, "rect_scale",
+		Vector2(1, 0), Vector2(1, 1), ANIM_DURATION,
+		Tween.TRANS_SINE, Tween.EASE_OUT, ANIM_DURATION)
 	tween.start()
 
 func _input(event):
