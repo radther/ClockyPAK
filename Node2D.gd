@@ -2,7 +2,6 @@ extends Node2D
 
 const START_BUTTON = 7  # Adjust if your controller uses a different index
 const A_BUTTON = 1
-const ANIM_DURATION = 0.1
 
 onready var log_label = $Log
 onready var hours_label = $Hours
@@ -13,6 +12,7 @@ var last_second = -1
 var tween: Tween
 var left_eye: Panel
 var right_eye: Panel
+var _pending: Dictionary = {}  # tracks pending y-scale per node for chained animations
 
 func _make_eye(center: Vector2) -> Panel:
 	var style = StyleBoxFlat.new()
@@ -45,20 +45,50 @@ func _process(_delta):
 		hours_label.text = "%02d" % [time.hour]
 		minutes_label.text = "%02d" % [time.minute]
 
-func _close_eyes():
+func _tween_scale_y(node, duration: float, delay: float, target_y: float, trans: int, ease_type: int):
+	var from_y = _pending.get(node, node.rect_scale.y)
+	tween.interpolate_property(node, "rect_scale",
+		Vector2(1, from_y), Vector2(1, target_y), duration, trans, ease_type, delay)
+	_pending[node] = target_y
+
+func _close_clock(duration: float, delay: float, target: float = 0.0):
+	_tween_scale_y(hours_label, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_IN)
+	_tween_scale_y(minutes_label, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_IN)
+
+func _open_clock(duration: float, delay: float, target: float = 1.0):
+	_tween_scale_y(hours_label, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_OUT)
+	_tween_scale_y(minutes_label, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_OUT)
+
+func _open_left_eye(duration: float, delay: float, target: float = 1.0):
+	_tween_scale_y(left_eye, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_OUT)
+
+func _close_left_eye(duration: float, delay: float, target: float = 0.0):
+	_tween_scale_y(left_eye, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_IN)
+
+func _open_right_eye(duration: float, delay: float, target: float = 1.0):
+	_tween_scale_y(right_eye, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_OUT)
+
+func _close_right_eye(duration: float, delay: float, target: float = 0.0):
+	_tween_scale_y(right_eye, duration, delay, target, Tween.TRANS_SINE, Tween.EASE_IN)
+
+func _open_both_eyes(duration: float, delay: float, target: float = 1.0):
+	_open_left_eye(duration, delay, target)
+	_open_right_eye(duration, delay, target)
+
+func _close_both_eyes(duration: float, delay: float, target: float = 0.0):
+	_close_left_eye(duration, delay, target)
+	_close_right_eye(duration, delay, target)
+
+func _play_blink():
 	tween.stop_all()
-	tween.interpolate_property(hours_label, "rect_scale",
-		Vector2(1, 1), Vector2(1, 0), ANIM_DURATION,
-		Tween.TRANS_SINE, Tween.EASE_IN)
-	tween.interpolate_property(minutes_label, "rect_scale",
-		Vector2(1, 1), Vector2(1, 0), ANIM_DURATION,
-		Tween.TRANS_SINE, Tween.EASE_IN)
-	tween.interpolate_property(left_eye, "rect_scale",
-		Vector2(1, 0), Vector2(1, 1), ANIM_DURATION,
-		Tween.TRANS_SINE, Tween.EASE_OUT, ANIM_DURATION)
-	tween.interpolate_property(right_eye, "rect_scale",
-		Vector2(1, 0), Vector2(1, 1), ANIM_DURATION,
-		Tween.TRANS_SINE, Tween.EASE_OUT, ANIM_DURATION)
+	_pending.clear()
+	_close_clock(0.1, 0.0)
+	_open_left_eye(0.1, 0.1, 0.5)
+	_open_right_eye(0.1, 0.1, 0.1)
+	_close_both_eyes(0.1, 1)
+	_open_both_eyes(0.1, 1.1)
+	_close_both_eyes(0.1, 2)
+	_open_clock(0.1, 2.1)
 	tween.start()
 
 func _input(event):
@@ -67,7 +97,7 @@ func _input(event):
 #		if event.scancode == KEY_A:
 		_quit()
 	elif _isKeyOrButton(event, KEY_B, A_BUTTON):
-		_close_eyes()
+		_play_blink()
 
 func _quit():
 	if not quitting:
