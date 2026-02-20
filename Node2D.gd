@@ -2,6 +2,7 @@ extends Node2D
 
 const EXIT_BUTTON = 8   # Adjust if your controller uses a different index
 const A_BUTTON = 1
+const B_BUTTON = 2
 const SELECT_BUTTON = 6  # Adjust if your controller uses a different index
 
 onready var log_label = $Log
@@ -188,7 +189,8 @@ func _scale_eyes_from_center(duration: float, delay: float, target: float,
 	_tween_eye_center_scale(left_eye,  duration, delay, target, trans, ease_type)
 	_tween_eye_center_scale(right_eye, duration, delay, target, trans, ease_type)
 
-func _play_blink():
+func _play_peek():
+	yield(get_tree().create_timer(10.0), "timeout")
 	tween.stop_all()
 	_pending.clear()
 	_pending_eye_own_scale.clear()
@@ -210,13 +212,40 @@ func _play_blink():
 	_close_both_eyes(0.1, 5.6)
 	_open_clock(0.1, 5.7)
 	tween.start()
+	
+func _play_happy():
+	yield(get_tree().create_timer(10.0), "timeout")
+	tween.stop_all()
+	_pending.clear()
+	_pending_eye_own_scale.clear()
+	_pending_eye_center_scale.clear()
+	_pending_eye_shift.clear()
+	_close_clock(0.1, 0.0)
+	_open_both_eyes(0.1, 0.1)
+#	_open_left_eye(0.1, 0.1, 0.3, Tween.TRANS_LINEAR, Tween.EASE_OUT)
+	_open_left_eye(1, 0.3, 0.7, Tween.TRANS_EXPO, Tween.EASE_OUT)
+	_open_both_eyes(0.3, 1.5, 1)
+	_shift_eyes(0.1, 2.1, -40)
+	_shift_eyes(0.2, 3.4, 70)
+	
+	_close_both_eyes(0.1, 3.3)
+	_open_both_eyes(0.1, 3.4, 1)
+	_shift_eyes(0.1, 5, 0)
+	_close_both_eyes(0.1, 5.4)
+	_open_both_eyes(0.1, 5.5, 1)
+	
+	_close_both_eyes(0.1, 5.6)
+	_open_clock(0.1, 5.7)
+	tween.start()
 
 func _input(event):
 	_print_input(event)
 	if _isKeyOrButton(event, KEY_A, EXIT_BUTTON):
 		_quit()
 	elif _isKeyOrButton(event, KEY_B, A_BUTTON):
-		_play_blink()
+		_play_peek()
+	elif _isKeyOrButton(event, KEY_C, B_BUTTON):
+		_play_peek()
 	elif _isKeyOrButton(event, KEY_S, SELECT_BUTTON):
 		log_label.visible = !log_label.visible
 
