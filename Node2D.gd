@@ -1,7 +1,8 @@
 extends Node2D
 
-const START_BUTTON = 7  # Adjust if your controller uses a different index
+const EXIT_BUTTON = 8   # Adjust if your controller uses a different index
 const A_BUTTON = 1
+const SELECT_BUTTON = 6  # Adjust if your controller uses a different index
 
 onready var log_label = $Log
 onready var hours_label = $Hours
@@ -55,6 +56,7 @@ func _make_eye(center: Vector2) -> Panel:
 	return panel
 
 func _ready():
+	log_label.visible = false
 	log_label.add_text("Ready — press any key\n")
 	left_eye  = _make_eye(Vector2(342, 384))
 	right_eye = _make_eye(Vector2(684, 384))
@@ -192,11 +194,12 @@ func _play_blink():
 
 func _input(event):
 	_print_input(event)
-	if _isKeyOrButton(event, KEY_A, START_BUTTON):
-#		if event.scancode == KEY_A:
+	if _isKeyOrButton(event, KEY_A, EXIT_BUTTON):
 		_quit()
 	elif _isKeyOrButton(event, KEY_B, A_BUTTON):
 		_play_blink()
+	elif _isKeyOrButton(event, KEY_S, SELECT_BUTTON):
+		log_label.visible = !log_label.visible
 
 func _quit():
 	if not quitting:
