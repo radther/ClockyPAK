@@ -2,272 +2,43 @@ extends Node2D
 
 const EXIT_BUTTON = 8   # Adjust if your controller uses a different index
 const A_BUTTON = 1
-const B_BUTTON = 0
+const B_BUTTON = 2
 const SELECT_BUTTON = 6  # Adjust if your controller uses a different index
 
-onready var log_label = $Log
-onready var hours_label = $Hours
-onready var minutes_label = $Minutes
+onready var log_label       = $Log
+onready var hours_label     = $Hours
+onready var minutes_label   = $Minutes
+onready var _tween          = $Tween
+onready var _eyes           = $Eyes
+onready var _eye_tweener    = $EyeTweener
+onready var _eye_animations = $EyeAnimations
 
-var quitting = false
+var quitting    = false
 var last_second = -1
-var tween: Tween
-var left_eye: Panel
-var right_eye: Panel
-var _pending: Dictionary = {}
-var _pending_eye_own_scale: Dictionary = {}    # Panel -> float (own-center scale, default 1.0)
-var _pending_eye_center_scale: Dictionary = {} # Panel -> float (from-center scale, default 1.0)
-var _pending_eye_shift: Dictionary = {}        # Panel -> float (x pixel offset, default 0.0)
-var _pending_eye_shift_y: Dictionary = {}      # Panel -> float (y pixel offset, default 0.0)
-var _eye_configs: Dictionary = {}              # Panel -> {shift_holder, csh, osh, base_center, full_size}
-var _eye_common_x: float = 0.0                # midpoint between the two eye centers
-
-func _make_eye(center: Vector2) -> Panel:
-	var full_size = Vector2(200, 400)
-
-	# shift_holder: owns lateral shift (rect_position:x)
-	var shift_holder = Control.new()
-	shift_holder.rect_position = center
-	add_child(shift_holder)
-	move_child(shift_holder, 0)
-
-	# csh (center_scale_holder): owns from-center scale (rect_scale + rect_position:x within shift_holder)
-	var csh = Control.new()
-	shift_holder.add_child(csh)
-
-	# osh (own_scale_holder): owns own-center scale (rect_scale)
-	var osh = Control.new()
-	csh.add_child(osh)
-
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color.white
-	style.set_corner_radius_all(48)
-	var panel = Panel.new()
-	panel.add_stylebox_override("panel", style)
-	panel.rect_size = Vector2(full_size.x, 0)           # start closed
-	panel.rect_position = Vector2(-full_size.x / 2, 0)  # centered on osh origin
-	osh.add_child(panel)
-
-	_eye_configs[panel] = {
-		"shift_holder": shift_holder,
-		"csh": csh,
-		"osh": osh,
-		"base_center": center,
-		"full_size": full_size
-	}
-	return panel
 
 func _ready():
 	log_label.visible = false
 	log_label.add_text("Ready — press any key\n")
-	left_eye  = _make_eye(Vector2(342, 384))
-	right_eye = _make_eye(Vector2(684, 384))
-	_eye_common_x = (_eye_configs[left_eye].base_center.x + _eye_configs[right_eye].base_center.x) / 2.0
-	hours_label.rect_pivot_offset = hours_label.rect_size / 2
+	hours_label.rect_pivot_offset   = hours_label.rect_size   / 2
 	minutes_label.rect_pivot_offset = minutes_label.rect_size / 2
-	tween = Tween.new()
-	add_child(tween)
+	_eye_tweener.setup(_tween, _eyes, hours_label, minutes_label)
+	_eye_animations.setup(_tween, _eye_tweener)
 
 func _process(_delta):
 	var time = OS.get_time()
 	if time.second != last_second:
 		last_second = time.second
-		hours_label.text = "%02d" % [time.hour]
+		hours_label.text   = "%02d" % [time.hour]
 		minutes_label.text = "%02d" % [time.minute]
-
-func _tween_scale_y(node, duration: float, delay: float, target_y: float, trans: int, ease_type: int):
-	var from_y = _pending.get(node, node.rect_scale.y)
-	tween.interpolate_property(node, "rect_scale",
-		Vector2(1, from_y), Vector2(1, target_y), duration, trans, ease_type, delay)
-	_pending[node] = target_y
-
-func _tween_eye_y(panel: Panel, duration: float, delay: float, target_y: float, trans: int, ease_type: int):
-	var config = _eye_configs[panel]
-	var full_h: float = config.full_size.y
-	var from_y = _pending.get(panel, panel.rect_size.y / full_h)
-	var from_h = from_y * full_h
-	var to_h   = target_y * full_h
-	tween.interpolate_property(panel, "rect_size:y", from_h, to_h, duration, trans, ease_type, delay)
-	tween.interpolate_property(panel, "rect_position:y", -from_h / 2, -to_h / 2, duration, trans, ease_type, delay)
-	_pending[panel] = target_y
-
-func _tween_eye_shift(panel: Panel, duration: float, delay: float, target_x: float, trans: int, ease_type: int):
-	var config = _eye_configs[panel]
-	var sh = config.shift_holder
-	var base_x = config.base_center.x
-	var from_x = _pending_eye_shift.get(panel, sh.rect_position.x - base_x)
-	tween.interpolate_property(sh, "rect_position:x",
-		base_x + from_x, base_x + target_x, duration, trans, ease_type, delay)
-	_pending_eye_shift[panel] = target_x
-
-func _tween_eye_shift_y(panel: Panel, duration: float, delay: float, target_y: float, trans: int, ease_type: int):
-	var config = _eye_configs[panel]
-	var sh = config.shift_holder
-	var base_y = config.base_center.y
-	var from_y = _pending_eye_shift_y.get(panel, sh.rect_position.y - base_y)
-	tween.interpolate_property(sh, "rect_position:y",
-		base_y + from_y, base_y + target_y, duration, trans, ease_type, delay)
-	_pending_eye_shift_y[panel] = target_y
-
-# Scales each eye around its own center. Runs on osh.rect_scale.
-func _tween_eye_scale(panel: Panel, duration: float, delay: float, target_s: float, trans: int, ease_type: int):
-	var osh = _eye_configs[panel].osh
-	var from_s = _pending_eye_own_scale.get(panel, osh.rect_scale.x)
-	tween.interpolate_property(osh, "rect_scale",
-		Vector2(from_s, from_s), Vector2(target_s, target_s), duration, trans, ease_type, delay)
-	_pending_eye_own_scale[panel] = target_s
-
-# Scales each eye around the shared midpoint. Runs on csh.rect_scale + csh.rect_position:x.
-# These properties are separate from shift_holder and osh, so all four effects run in parallel.
-func _tween_eye_center_scale(panel: Panel, duration: float, delay: float, target_s: float, trans: int, ease_type: int):
-	var config = _eye_configs[panel]
-	var csh = config.csh
-	var base_x = config.base_center.x
-	var from_s = _pending_eye_center_scale.get(panel, csh.rect_scale.x)
-	tween.interpolate_property(csh, "rect_scale",
-		Vector2(from_s, from_s), Vector2(target_s, target_s), duration, trans, ease_type, delay)
-	tween.interpolate_property(csh, "rect_position:x",
-		(base_x - _eye_common_x) * (from_s - 1.0),
-		(base_x - _eye_common_x) * (target_s - 1.0),
-		duration, trans, ease_type, delay)
-	_pending_eye_center_scale[panel] = target_s
-
-func _close_clock(duration: float, delay: float, target: float = 0.0,
-				  trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_tween_scale_y(hours_label, duration, delay, target, trans, ease_type)
-	_tween_scale_y(minutes_label, duration, delay, target, trans, ease_type)
-
-func _open_clock(duration: float, delay: float, target: float = 1.0,
-				 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_tween_scale_y(hours_label, duration, delay, target, trans, ease_type)
-	_tween_scale_y(minutes_label, duration, delay, target, trans, ease_type)
-
-func _open_left_eye(duration: float, delay: float, target: float = 1.0,
-					trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_tween_eye_y(left_eye, duration, delay, target, trans, ease_type)
-
-func _close_left_eye(duration: float, delay: float, target: float = 0.0,
-					 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_tween_eye_y(left_eye, duration, delay, target, trans, ease_type)
-
-func _open_right_eye(duration: float, delay: float, target: float = 1.0,
-					 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_tween_eye_y(right_eye, duration, delay, target, trans, ease_type)
-
-func _close_right_eye(duration: float, delay: float, target: float = 0.0,
-					  trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_tween_eye_y(right_eye, duration, delay, target, trans, ease_type)
-
-func _open_both_eyes(duration: float, delay: float, target: float = 1.0,
-					 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_open_left_eye(duration, delay, target, trans, ease_type)
-	_open_right_eye(duration, delay, target, trans, ease_type)
-
-func _close_both_eyes(duration: float, delay: float, target: float = 0.0,
-					  trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_close_left_eye(duration, delay, target, trans, ease_type)
-	_close_right_eye(duration, delay, target, trans, ease_type)
-
-func _shift_left_eye(duration: float, delay: float, amount: float,
-					 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_tween_eye_shift(left_eye, duration, delay, amount, trans, ease_type)
-
-func _shift_right_eye(duration: float, delay: float, amount: float,
-					  trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_tween_eye_shift(right_eye, duration, delay, amount, trans, ease_type)
-
-func _shift_eyes(duration: float, delay: float, amount: float,
-				 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_shift_left_eye(duration, delay, amount, trans, ease_type)
-	_shift_right_eye(duration, delay, amount, trans, ease_type)
-
-func _shift_left_eye_y(duration: float, delay: float, amount: float,
-					   trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_tween_eye_shift_y(left_eye, duration, delay, amount, trans, ease_type)
-
-func _shift_right_eye_y(duration: float, delay: float, amount: float,
-						trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_tween_eye_shift_y(right_eye, duration, delay, amount, trans, ease_type)
-
-func _shift_eyes_y(duration: float, delay: float, amount: float,
-				   trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_shift_left_eye_y(duration, delay, amount, trans, ease_type)
-	_shift_right_eye_y(duration, delay, amount, trans, ease_type)
-
-func _scale_left_eye(duration: float, delay: float, target: float,
-					 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_tween_eye_scale(left_eye, duration, delay, target, trans, ease_type)
-
-func _scale_right_eye(duration: float, delay: float, target: float,
-					  trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_tween_eye_scale(right_eye, duration, delay, target, trans, ease_type)
-
-func _scale_eyes(duration: float, delay: float, target: float,
-				 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_scale_left_eye(duration, delay, target, trans, ease_type)
-	_scale_right_eye(duration, delay, target, trans, ease_type)
-
-func _scale_eyes_from_center(duration: float, delay: float, target: float,
-							  trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_tween_eye_center_scale(left_eye,  duration, delay, target, trans, ease_type)
-	_tween_eye_center_scale(right_eye, duration, delay, target, trans, ease_type)
-
-func _play_peek():
-	tween.stop_all()
-	_pending.clear()
-	_pending_eye_own_scale.clear()
-	_pending_eye_center_scale.clear()
-	_pending_eye_shift.clear()
-	_pending_eye_shift_y.clear()
-	_close_clock(0.1, 0.0)
-#	_open_left_eye(0.1, 0.1, 0.3, Tween.TRANS_LINEAR, Tween.EASE_OUT)
-	_open_left_eye(1, 0.3, 0.7, Tween.TRANS_EXPO, Tween.EASE_OUT)
-	_open_both_eyes(0.3, 1.5, 1)
-	_shift_eyes(0.1, 2.1, -40)
-	_shift_eyes(0.2, 3.4, 70)
-	
-	_close_both_eyes(0.1, 3.3)
-	_open_both_eyes(0.1, 3.4, 1)
-	_shift_eyes(0.1, 5, 0)
-	_close_both_eyes(0.1, 5.4)
-	_open_both_eyes(0.1, 5.5, 1)
-	
-	_close_both_eyes(0.1, 5.6)
-	_open_clock(0.1, 5.7)
-	tween.start()
-	
-func _play_happy():
-	tween.stop_all()
-	_pending.clear()
-	_pending_eye_own_scale.clear()
-	_pending_eye_center_scale.clear()
-	_pending_eye_shift.clear()
-	_pending_eye_shift_y.clear()
-	_close_clock(0.1, 0.0)
-	_open_both_eyes(0.1, 0.1)
-	
-	_scale_eyes(0.7, 0.4, 1.4, Tween.TRANS_QUART)
-	_scale_eyes_from_center(0.7, 0.4, 1.2, Tween.TRANS_QUART)
-	_open_both_eyes(0.7, 0.4, 0.2, Tween.TRANS_QUART)
-	_shift_eyes_y(0.8, 0.4, -140, Tween.TRANS_QUART)
-	
-	_scale_eyes(0.7, 2, 1, Tween.TRANS_QUART)
-	_scale_eyes_from_center(0.7, 2, 1, Tween.TRANS_QUART)
-	_open_both_eyes(0.7, 2, 1, Tween.TRANS_QUART)
-	_shift_eyes_y(0.7, 1.95, 0, Tween.TRANS_QUART)
-	
-	_close_both_eyes(0.1, 3)
-	_open_clock(0.1, 3.1)
-	tween.start()
 
 func _input(event):
 	_print_input(event)
 	if _isKeyOrButton(event, KEY_A, EXIT_BUTTON):
 		_quit()
 	elif _isKeyOrButton(event, KEY_B, A_BUTTON):
-		_play_peek()
+		_eye_animations.play_peek()
 	elif _isKeyOrButton(event, KEY_C, B_BUTTON):
-		_play_happy()
+		_eye_animations.play_happy()
 	elif _isKeyOrButton(event, KEY_S, SELECT_BUTTON):
 		log_label.visible = !log_label.visible
 
