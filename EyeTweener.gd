@@ -82,81 +82,81 @@ func _tween_eye_center_scale(panel: Panel, duration: float, delay: float, target
 	_pending_eye_center_scale[panel] = target_s
 
 func close_clock(duration: float, delay: float, target: float = 0.0,
-                 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+				 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	_tween_scale_y(_hours_label, duration, delay, target, trans, ease_type)
 	_tween_scale_y(_minutes_label, duration, delay, target, trans, ease_type)
 
 func open_clock(duration: float, delay: float, target: float = 1.0,
-                trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+				trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	_tween_scale_y(_hours_label, duration, delay, target, trans, ease_type)
 	_tween_scale_y(_minutes_label, duration, delay, target, trans, ease_type)
 
 func open_left_eye(duration: float, delay: float, target: float = 1.0,
-                   trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+				   trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	_tween_eye_y(_eyes.left_eye, duration, delay, target, trans, ease_type)
 
 func close_left_eye(duration: float, delay: float, target: float = 0.0,
-                    trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+					trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	_tween_eye_y(_eyes.left_eye, duration, delay, target, trans, ease_type)
 
 func open_right_eye(duration: float, delay: float, target: float = 1.0,
-                    trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+					trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	_tween_eye_y(_eyes.right_eye, duration, delay, target, trans, ease_type)
 
 func close_right_eye(duration: float, delay: float, target: float = 0.0,
-                     trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+					 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	_tween_eye_y(_eyes.right_eye, duration, delay, target, trans, ease_type)
 
 func open_both_eyes(duration: float, delay: float, target: float = 1.0,
-                    trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+					trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	open_left_eye(duration, delay, target, trans, ease_type)
 	open_right_eye(duration, delay, target, trans, ease_type)
 
 func close_both_eyes(duration: float, delay: float, target: float = 0.0,
-                     trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+					 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	close_left_eye(duration, delay, target, trans, ease_type)
 	close_right_eye(duration, delay, target, trans, ease_type)
 
 func shift_left_eye(duration: float, delay: float, amount: float,
-                    trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+					trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	_tween_eye_shift(_eyes.left_eye, duration, delay, amount, trans, ease_type)
 
 func shift_right_eye(duration: float, delay: float, amount: float,
-                     trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+					 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	_tween_eye_shift(_eyes.right_eye, duration, delay, amount, trans, ease_type)
 
 func shift_eyes(duration: float, delay: float, amount: float,
-                trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+				trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	shift_left_eye(duration, delay, amount, trans, ease_type)
 	shift_right_eye(duration, delay, amount, trans, ease_type)
 
 func shift_left_eye_y(duration: float, delay: float, amount: float,
-                      trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+					  trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	_tween_eye_shift_y(_eyes.left_eye, duration, delay, amount, trans, ease_type)
 
 func shift_right_eye_y(duration: float, delay: float, amount: float,
-                       trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+					   trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	_tween_eye_shift_y(_eyes.right_eye, duration, delay, amount, trans, ease_type)
 
 func shift_eyes_y(duration: float, delay: float, amount: float,
-                  trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+				  trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	shift_left_eye_y(duration, delay, amount, trans, ease_type)
 	shift_right_eye_y(duration, delay, amount, trans, ease_type)
 
 func scale_left_eye(duration: float, delay: float, target: float,
-                    trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+					trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	_tween_eye_scale(_eyes.left_eye, duration, delay, target, trans, ease_type)
 
 func scale_right_eye(duration: float, delay: float, target: float,
-                     trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+					 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	_tween_eye_scale(_eyes.right_eye, duration, delay, target, trans, ease_type)
 
 func scale_eyes(duration: float, delay: float, target: float,
-                trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+				trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	scale_left_eye(duration, delay, target, trans, ease_type)
 	scale_right_eye(duration, delay, target, trans, ease_type)
 
 func scale_eyes_from_center(duration: float, delay: float, target: float,
-                             trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+							 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	_tween_eye_center_scale(_eyes.left_eye,  duration, delay, target, trans, ease_type)
 	_tween_eye_center_scale(_eyes.right_eye, duration, delay, target, trans, ease_type)

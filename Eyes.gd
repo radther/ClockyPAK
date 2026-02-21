@@ -44,4 +44,4 @@ func _ready():
 	left_eye  = _make_eye(Vector2(342, 384))
 	right_eye = _make_eye(Vector2(684, 384))
 	_eye_common_x = (_eye_configs[left_eye].base_center.x +
-	                 _eye_configs[right_eye].base_center.x) / 2.0
+					 _eye_configs[right_eye].base_center.x) / 2.0
