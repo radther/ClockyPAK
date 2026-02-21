@@ -1,13 +1,21 @@
 extends Node
 
 var _tween: Tween
-var _tweener  # EyeTweener node
+var _tweener     # EyeTweener node
+var _is_playing: bool = false
 
 func setup(tween: Tween, tweener):
 	_tween   = tween
 	_tweener = tweener
+	_tween.connect("tween_all_completed", self, "_on_animation_finished")
+
+func _on_animation_finished():
+	_is_playing = false
 
 func play_peek():
+	if _is_playing:
+		return
+	_is_playing = true
 	_tween.stop_all()
 	_tweener.reset_pending()
 	_tweener.close_clock(0.1, 0.0)
@@ -38,6 +46,9 @@ func play_peek():
 	_tween.start()
 
 func play_happy():
+	if _is_playing:
+		return
+	_is_playing = true
 	_tween.stop_all()
 	_tweener.reset_pending()
 	_tweener.close_clock(0.1, 0.0)

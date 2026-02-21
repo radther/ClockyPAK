@@ -18,9 +18,10 @@ onready var _eye_animations = $EyeAnimations
 var quitting    = false
 var last_second = -1
 
-var _fonts: Array     = []
-var _font_index: int  = 0
+var _fonts: Array      = []
+var _font_index: int   = 0
 var _clock_font: DynamicFont
+var _animations: Array = []
 
 func _ready():
 	log_label.visible = false
@@ -29,6 +30,10 @@ func _ready():
 	minutes_label.rect_pivot_offset = minutes_label.rect_size / 2
 	_eye_tweener.setup(_tween, _eyes, hours_label, minutes_label)
 	_eye_animations.setup(_tween, _eye_tweener)
+	_animations = [
+		funcref(_eye_animations, "play_peek"),
+		funcref(_eye_animations, "play_happy"),
+	]
 	_scan_fonts()
 	_clock_font = DynamicFont.new()
 	_clock_font.size = 412
@@ -43,6 +48,9 @@ func _process(_delta):
 		last_second = time.second
 		hours_label.text   = "%02d" % [time.hour]
 		minutes_label.text = "%02d" % [time.minute]
+		if time.second == 58 and randi() % 15 == 0:
+			var fn = _animations[randi() % _animations.size()]
+			fn.call_func()
 
 func _input(event):
 	_print_input(event)
