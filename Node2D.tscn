@@ -25,16 +25,9 @@ margin_bottom = 514.0
 bbcode_enabled = true
 scroll_following = true
 
-[node name="Hours" type="Label" parent="."]
-margin_right = 512.0
-margin_bottom = 768.0
-text = "14"
-align = 2
-valign = 1
-
-[node name="Minutes" type="Label" parent="."]
-margin_left = 512.0
+[node name="Clock" type="Label" parent="."]
 margin_right = 1024.0
 margin_bottom = 768.0
-text = "12"
+text = "1412"
+align = 1
 valign = 1

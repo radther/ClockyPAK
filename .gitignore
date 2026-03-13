@@ -1,2 +1,5 @@
 export/
 .import/
+.pm/
+.claude/
+PAK/

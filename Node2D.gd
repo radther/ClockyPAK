@@ -1,15 +1,18 @@
 extends Node2D
 
 const EXIT_BUTTON = 8   # Adjust if your controller uses a different index
+
 const A_BUTTON = 1
-const B_BUTTON = 2
+const B_BUTTON = 0
+const Y_BUTTON = 2
+const X_BUTTON = 3
+
 const SELECT_BUTTON = 6  # Adjust if your controller uses a different index
 const DPAD_UP   = 12
 const DPAD_DOWN = 13
 
 onready var log_label       = $Log
-onready var hours_label     = $Hours
-onready var minutes_label   = $Minutes
+onready var clock_label     = $Clock
 onready var _tween          = $Tween
 onready var _eyes           = $Eyes
 onready var _eye_tweener    = $EyeTweener
@@ -26,28 +29,26 @@ var _animations: Array = []
 func _ready():
 	log_label.visible = false
 	log_label.add_text("Ready — press any key\n")
-	hours_label.rect_pivot_offset   = hours_label.rect_size   / 2
-	minutes_label.rect_pivot_offset = minutes_label.rect_size / 2
-	_eye_tweener.setup(_tween, _eyes, hours_label, minutes_label)
+	clock_label.rect_pivot_offset = clock_label.rect_size / 2
+	_eye_tweener.setup(_tween, _eyes, clock_label)
 	_eye_animations.setup(_tween, _eye_tweener)
 	_animations = [
 		funcref(_eye_animations, "play_peek"),
 		funcref(_eye_animations, "play_happy"),
+		funcref(_eye_animations, "play_follow"),
 	]
 	_scan_fonts()
 	_clock_font = DynamicFont.new()
 	_clock_font.size = 412
 	if _fonts.size() > 0:
 		_apply_font(0)
-	hours_label.set("custom_fonts/font", _clock_font)
-	minutes_label.set("custom_fonts/font", _clock_font)
+	clock_label.set("custom_fonts/font", _clock_font)
 
 func _process(_delta):
 	var time = OS.get_time()
 	if time.second != last_second:
 		last_second = time.second
-		hours_label.text   = "%02d" % [time.hour]
-		minutes_label.text = "%02d" % [time.minute]
+		clock_label.text = "%02d%02d" % [time.hour, time.minute]
 		if time.second == 58 and randi() % 15 == 0:
 			var fn = _animations[randi() % _animations.size()]
 			fn.call_func()
@@ -60,6 +61,8 @@ func _input(event):
 		_eye_animations.play_peek()
 	elif _isKeyOrButton(event, KEY_C, B_BUTTON):
 		_eye_animations.play_happy()
+	elif _isKeyOrButton(event, KEY_V, Y_BUTTON):
+		_eye_animations.play_follow()
 	elif _isKeyOrButton(event, KEY_S, SELECT_BUTTON):
 		log_label.visible = !log_label.visible
 	elif _isKeyOrButton(event, KEY_UP, DPAD_UP):

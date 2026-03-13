@@ -2,8 +2,7 @@ extends Node
 
 var _tween: Tween
 var _eyes           # Eyes node
-var _hours_label: Label
-var _minutes_label: Label
+var _clock_label: Label
 
 var _pending: Dictionary = {}
 var _pending_eye_own_scale: Dictionary = {}    # Panel -> float (own-center scale, default 1.0)
@@ -11,11 +10,10 @@ var _pending_eye_center_scale: Dictionary = {} # Panel -> float (from-center sca
 var _pending_eye_shift: Dictionary = {}        # Panel -> float (x pixel offset, default 0.0)
 var _pending_eye_shift_y: Dictionary = {}      # Panel -> float (y pixel offset, default 0.0)
 
-func setup(tween: Tween, eyes, hours_label: Label, minutes_label: Label):
+func setup(tween: Tween, eyes, clock_label: Label):
 	_tween = tween
 	_eyes  = eyes
-	_hours_label  = hours_label
-	_minutes_label = minutes_label
+	_clock_label = clock_label
 
 func reset_pending():
 	_pending.clear()
@@ -83,13 +81,11 @@ func _tween_eye_center_scale(panel: Panel, duration: float, delay: float, target
 
 func close_clock(duration: float, delay: float, target: float = 0.0,
 				 trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_tween_scale_y(_hours_label, duration, delay, target, trans, ease_type)
-	_tween_scale_y(_minutes_label, duration, delay, target, trans, ease_type)
+	_tween_scale_y(_clock_label, duration, delay, target, trans, ease_type)
 
 func open_clock(duration: float, delay: float, target: float = 1.0,
 				trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
-	_tween_scale_y(_hours_label, duration, delay, target, trans, ease_type)
-	_tween_scale_y(_minutes_label, duration, delay, target, trans, ease_type)
+	_tween_scale_y(_clock_label, duration, delay, target, trans, ease_type)
 
 func open_left_eye(duration: float, delay: float, target: float = 1.0,
 				   trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):

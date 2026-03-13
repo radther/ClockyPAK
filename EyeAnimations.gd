@@ -64,3 +64,31 @@ func play_happy():
 	_tweener.close_both_eyes(0.1, 3)
 	_tweener.open_clock(0.1, 3.1)
 	_tween.start()
+	
+
+func play_follow():
+	if _is_playing:
+		return
+	_is_playing = true
+	_tween.stop_all()
+	_tweener.reset_pending()
+	_tweener.close_clock(0.1, 0.0)
+	_tweener.open_both_eyes(0.1, 0.1)
+
+	_tweener.close_both_eyes(0.1, 0.4)
+	_tweener.open_both_eyes(0.1, 0.4)
+	
+	_tweener.shift_eyes_y(0.2, 0.4, -200, Tween.TRANS_QUART, Tween.EASE_OUT)
+	_tweener.shift_eyes(0.2, 0.4, -200, Tween.TRANS_QUART, Tween.EASE_OUT)
+	
+	_tweener.shift_eyes(2.5, 1, 240, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+	
+	_tweener.close_both_eyes(0.1, 4)
+	_tweener.open_both_eyes(0.1, 4)
+	
+	_tweener.shift_eyes_y(0.2, 4, 0, Tween.TRANS_QUART, Tween.EASE_OUT)
+	_tweener.shift_eyes(0.2, 4, 0, Tween.TRANS_QUART, Tween.EASE_OUT)
+	
+	_tweener.close_both_eyes(0.1, 6)
+	_tweener.open_clock(0.1, 6)
+	_tween.start()
