@@ -12,6 +12,22 @@ func setup(tween: Tween, tweener):
 func _on_animation_finished():
 	_is_playing = false
 
+func play_boot():
+	if _is_playing:
+		return
+	_is_playing = true
+	_tween.stop_all()
+	_tweener.reset_pending()
+	_tweener.open_left_eye(0.5, 0.5, 0.7, Tween.TRANS_QUART, Tween.EASE_OUT)
+	_tweener.open_right_eye(0.5, 0.5, 0.2, Tween.TRANS_QUART, Tween.EASE_OUT)
+	_tweener.open_both_eyes(0.3, 1.5, 1, Tween.TRANS_QUART, Tween.EASE_OUT)
+	_tweener.close_both_eyes(0.1, 2.5)
+	_tweener.open_both_eyes(0.1, 2.6)
+	_tweener.close_both_eyes(0.1, 2.7)
+	_tweener.open_clock(0.1, 2.8)
+	_tween.start()
+
+
 func play_peek():
 	if _is_playing:
 		return

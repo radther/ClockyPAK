@@ -43,6 +43,8 @@ func _ready():
 	if _fonts.size() > 0:
 		_apply_font(0)
 	clock_label.set("custom_fonts/font", _clock_font)
+	clock_label.rect_scale = Vector2(1, 0)
+	_eye_animations.play_boot()
 
 func _process(_delta):
 	var time = OS.get_time()
