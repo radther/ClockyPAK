@@ -1,11 +1,31 @@
 extends Node2D
 
+class FontEntry:
+	var path: String
+	var size: int
+	func _init(p: String, s: int) -> void:
+		path = p
+		size = s
+
+const _FONT_TABLE: Array = [
+	["BarlowCondensed-ExtraBoldItalic.ttf", 480],
+	["FiraSans-Ultra.ttf",                  360],
+	["Fraunces_72pt-Black.ttf",             360],
+	["Fraunces_72pt_Soft-Bold.ttf",         360],
+	["Fredoka-Bold.ttf",                    400],
+	["Righteous-Regular.ttf",               380],
+	["Unbounded-Black.ttf",                 260],
+]
+const DEFAULT_FONT_SIZE: int = 412
+
 const EXIT_BUTTON = 8   # Adjust if your controller uses a different index
 
 const A_BUTTON = 1
 const B_BUTTON = 0
 const Y_BUTTON = 2
 const X_BUTTON = 3
+const L1_BUTTON = 4
+const L2_BUTTON = 5
 
 const SELECT_BUTTON = 6  # Adjust if your controller uses a different index
 const DPAD_UP   = 12
@@ -13,6 +33,8 @@ const DPAD_DOWN = 13
 
 onready var log_label       = $Log
 onready var clock_label     = $Clock
+onready var _test_bg         = $TestBG
+onready var _font_info      = $FontInfo
 onready var _tween          = $Tween
 onready var _eyes           = $Eyes
 onready var _eye_tweener    = $EyeTweener
@@ -39,7 +61,6 @@ func _ready():
 	]
 	_scan_fonts()
 	_clock_font = DynamicFont.new()
-	_clock_font.size = 412
 	if _fonts.size() > 0:
 		_apply_font(0)
 	clock_label.set("custom_fonts/font", _clock_font)
@@ -48,12 +69,20 @@ func _ready():
 
 func _process(_delta):
 	var time = OS.get_time()
-	if time.second != last_second:
+	if Input.is_key_pressed(KEY_SPACE) || Input.is_joy_button_pressed(0, L1_BUTTON):
+		clock_label.text = "8888"
+		_font_info.visible = true
+		_test_bg.visible = true				
+	elif time.second != last_second:
 		last_second = time.second
 		clock_label.text = "%02d%02d" % [time.hour, time.minute]
+		_font_info.visible = false
 		if time.second == 58 and randi() % 15 == 0:
 			var fn = _animations[randi() % _animations.size()]
 			fn.call_func()
+	else:
+		_font_info.visible = false
+		_test_bg.visible = false
 
 func _input(event):
 	_print_input(event)
@@ -77,6 +106,10 @@ func _input(event):
 			_apply_font(_font_index)
 
 func _scan_fonts():
+	var size_lookup: Dictionary = {}
+	for row in _FONT_TABLE:
+		size_lookup[row[0]] = row[1]
+
 	var dir = Directory.new()
 	if dir.open("res://fonts") != OK:
 		return
@@ -85,16 +118,24 @@ func _scan_fonts():
 	while file != "":
 		var lower = file.to_lower()
 		if lower.ends_with(".ttf") or lower.ends_with(".otf"):
-			_fonts.append("res://fonts/" + file)
+			var entry = FontEntry.new("res://fonts/" + file,
+									  size_lookup.get(file, DEFAULT_FONT_SIZE))
+			_fonts.append(entry)
 		file = dir.get_next()
 	dir.list_dir_end()
-	_fonts.sort()
+	_fonts.sort_custom(self, "_sort_fonts")
+
+func _sort_fonts(a: FontEntry, b: FontEntry) -> bool:
+	return a.path < b.path
 
 func _apply_font(index: int):
+	var entry: FontEntry = _fonts[index]
 	var fd = DynamicFontData.new()
-	fd.font_path = _fonts[index]
+	fd.font_path = entry.path
 	_clock_font.font_data = fd
-	log_label.add_text("Font: " + _fonts[index].get_file() + "\n")
+	_clock_font.size = entry.size
+	_font_info.text = entry.path.get_file()
+	log_label.add_text("Font: " + entry.path.get_file() + " (" + str(entry.size) + ")\n")
 
 func _quit():
 	if not quitting:

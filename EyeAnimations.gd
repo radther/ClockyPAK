@@ -21,10 +21,16 @@ func play_boot():
 	_tweener.open_left_eye(0.5, 0.5, 0.7, Tween.TRANS_QUART, Tween.EASE_OUT)
 	_tweener.open_right_eye(0.5, 0.5, 0.2, Tween.TRANS_QUART, Tween.EASE_OUT)
 	_tweener.open_both_eyes(0.3, 1.5, 1, Tween.TRANS_QUART, Tween.EASE_OUT)
-	_tweener.close_both_eyes(0.1, 2.5)
-	_tweener.open_both_eyes(0.1, 2.6)
-	_tweener.close_both_eyes(0.1, 2.7)
-	_tweener.open_clock(0.1, 2.8)
+	
+	_tweener.shift_eyes(0.2, 2, -40, Tween.TRANS_QUART, Tween.EASE_OUT)
+	_tweener.close_both_eyes(0.1, 2.5, 0,  Tween.TRANS_QUART, Tween.EASE_OUT)
+	_tweener.shift_eyes(0.2, 2.5, 0, Tween.TRANS_QUART, Tween.EASE_OUT)
+	_tweener.open_both_eyes(0.1, 2.6, 1, Tween.TRANS_QUART, Tween.EASE_OUT)
+
+	_tweener.close_both_eyes(0.1, 3.3)
+	_tweener.open_both_eyes(0.1, 3.4)
+	_tweener.close_both_eyes(0.1, 3.5)
+	_tweener.open_clock(0.1, 3.6)
 	_tween.start()
 
 
