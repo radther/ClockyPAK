@@ -23,19 +23,6 @@ const DEFAULT_DATE_FONT_SIZE: int = 44
 
 const SETTINGS_PATH = "user://settings.cfg"
 
-const EXIT_BUTTON = 8
-const A_BUTTON = 1
-const B_BUTTON = 0
-const Y_BUTTON = 2
-const X_BUTTON = 3
-const L1_BUTTON = 4
-const L2_BUTTON = 5
-const SELECT_BUTTON = 6
-const DPAD_UP    = 12
-const DPAD_DOWN  = 13
-const DPAD_LEFT  = 14
-const DPAD_RIGHT = 15
-
 const N_DATE_FORMATS    = 4
 const DATE_TOTAL_STATES = 1 + N_DATE_FORMATS * 2   # = 9
 const DATE_LABEL_HEIGHT = 50.0
@@ -49,7 +36,7 @@ const WEEKDAY_SHORT: Array = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
 
 onready var log_label       = $Log
 onready var clock_label     = $Clock
-onready var _test_bg         = $TestBG
+onready var _test_bg        = $TestBG
 onready var _font_info      = $FontInfo
 onready var _tween          = $Tween
 onready var _eyes           = $Eyes
@@ -66,7 +53,8 @@ var _clock_font: DynamicFont
 var _date_font: DynamicFont
 var _date_state: int   = 0
 var _animations: Array = []
-#var _debug_clock_rect: Label
+var _debug_clock_rect: Panel
+var _debug_date_style: StyleBoxFlat
 
 func _ready():
 	log_label.visible = false
@@ -84,23 +72,12 @@ func _ready():
 	_date_font = DynamicFont.new()
 	_date_font.size = DEFAULT_DATE_FONT_SIZE
 	_date_label.set("custom_fonts/font", _date_font)
-	
-#	var _debug_border = StyleBoxFlat.new()
-#	_debug_border.bg_color = Color(0, 0, 0, 0)
-#	_debug_border.border_color = Color(1, 0, 0, 1)
-#	_debug_border.set_border_width_all(2)
-#	_date_label.add_stylebox_override("normal", _debug_border)
-##	_debug_clock_rect = Label.new()
-#	var _debug_clock_border = StyleBoxFlat.new()
-#	_debug_clock_border.bg_color = Color(0, 0, 0, 0)
-#	_debug_clock_border.border_color = Color(0, 1, 0, 1)
-#	_debug_clock_border.set_border_width_all(2)
-#	_debug_clock_rect.add_stylebox_override("normal", _debug_clock_border)	
-#	add_child(_debug_clock_rect)
+	_setup_debug_overlays()
 
 	if _fonts.size() > 0:
-		_font_index = _load_font_index_from_settings()
-		_date_state = _load_date_state_from_settings()
+		var settings = _load_settings()
+		_font_index = settings[0]
+		_date_state = settings[1]
 		_apply_font(_font_index)
 	clock_label.set("custom_fonts/font", _clock_font)
 	clock_label.rect_scale = Vector2(1, 0)
@@ -108,54 +85,75 @@ func _ready():
 	_apply_date_state()
 	_eye_animations.play_boot()
 
+func _setup_debug_overlays():
+	_debug_date_style = StyleBoxFlat.new()
+	_debug_date_style.bg_color = Color(0, 0, 0, 0)
+	_debug_date_style.border_color = Color(1, 0, 0, 1)
+	_debug_date_style.set_border_width_all(0)
+	_date_label.add_stylebox_override("normal", _debug_date_style)
+
+	_debug_clock_rect = Panel.new()
+	var border = StyleBoxFlat.new()
+	border.bg_color = Color(0, 0, 0, 0)
+	border.border_color = Color(0, 1, 0, 1)
+	border.set_border_width_all(2)
+	_debug_clock_rect.add_stylebox_override("panel", border)
+	_debug_clock_rect.visible = false
+	add_child(_debug_clock_rect)
+
 func _process(_delta):
-	var time = OS.get_time()
-	if Input.is_key_pressed(KEY_SPACE) || Input.is_joy_button_pressed(0, L1_BUTTON):
+	var test_mode = Input.is_action_pressed("debug_mode")
+	_test_bg.visible = test_mode
+	_font_info.visible = test_mode
+	_debug_clock_rect.visible = test_mode
+	_debug_date_style.set_border_width_all(2 if test_mode else 0)
+
+	if test_mode:
 		clock_label.text = "8888"
-		_font_info.visible = true
-		_test_bg.visible = true
-	elif time.second != last_second:
+		return
+
+	var time = OS.get_time()
+	if time.second != last_second:
 		last_second = time.second
 		clock_label.text = "%02d%02d" % [time.hour, time.minute]
 		_update_date_text()
-		_font_info.visible = false
 		if time.second == 58 and randi() % 15 == 0:
-			var fn = _animations[randi() % _animations.size()]
-			fn.call_func()
-	else:
-		_font_info.visible = false
-		_test_bg.visible = false
+			_animations[randi() % _animations.size()].call_func()
 
 func _input(event):
+	if event is InputEventKey and event.echo:
+		return
 	_print_input(event)
-	if _isKeyOrButton(event, KEY_A, EXIT_BUTTON):
+	if event.is_action_pressed("app_quit"):
 		_quit()
-	elif _isKeyOrButton(event, KEY_B, A_BUTTON):
+	elif event.is_action_pressed("anim_peek"):
 		_eye_animations.play_peek()
-	elif _isKeyOrButton(event, KEY_C, B_BUTTON):
+	elif event.is_action_pressed("anim_happy"):
 		_eye_animations.play_happy()
-	elif _isKeyOrButton(event, KEY_V, Y_BUTTON):
+	elif event.is_action_pressed("anim_follow"):
 		_eye_animations.play_follow()
-	elif _isKeyOrButton(event, KEY_S, SELECT_BUTTON):
+	elif event.is_action_pressed("toggle_log"):
 		log_label.visible = !log_label.visible
-	elif _isKeyOrButton(event, KEY_UP, DPAD_UP):
-		if _fonts.size() > 0:
-			_font_index = (_font_index - 1 + _fonts.size()) % _fonts.size()
-			_apply_font(_font_index)
-			_save_settings()
-	elif _isKeyOrButton(event, KEY_DOWN, DPAD_DOWN):
-		if _fonts.size() > 0:
-			_font_index = (_font_index + 1) % _fonts.size()
-			_apply_font(_font_index)
-			_save_settings()
-	elif _isKeyOrButton(event, KEY_LEFT, DPAD_LEFT):
-		_date_state = (_date_state - 1 + DATE_TOTAL_STATES) % DATE_TOTAL_STATES
-		_apply_date_state()
-		_save_settings()
-	elif _isKeyOrButton(event, KEY_RIGHT, DPAD_RIGHT):
-		_date_state = (_date_state + 1) % DATE_TOTAL_STATES
-		_apply_date_state()
-		_save_settings()
+	elif event.is_action_pressed("font_prev"):
+		_change_font(-1)
+	elif event.is_action_pressed("font_next"):
+		_change_font(1)
+	elif event.is_action_pressed("date_prev"):
+		_change_date_state(-1)
+	elif event.is_action_pressed("date_next"):
+		_change_date_state(1)
+
+func _change_font(delta: int):
+	if _fonts.size() == 0:
+		return
+	_font_index = (_font_index + delta + _fonts.size()) % _fonts.size()
+	_apply_font(_font_index)
+	_save_settings()
+
+func _change_date_state(delta: int):
+	_date_state = (_date_state + delta + DATE_TOTAL_STATES) % DATE_TOTAL_STATES
+	_apply_date_state()
+	_save_settings()
 
 func _save_settings():
 	var cfg = ConfigFile.new()
@@ -163,21 +161,19 @@ func _save_settings():
 	cfg.set_value("display", "date_state", _date_state)
 	cfg.save(SETTINGS_PATH)
 
-func _load_font_index_from_settings() -> int:
+func _load_settings() -> Array:
 	var cfg = ConfigFile.new()
 	if cfg.load(SETTINGS_PATH) != OK:
-		return 0
+		return [0, 0]
 	var saved_name = cfg.get_value("display", "font_name", "")
+	var font_idx = 0
 	for i in range(_fonts.size()):
 		if _fonts[i].path.get_file() == saved_name:
-			return i
-	return 0
-
-func _load_date_state_from_settings() -> int:
-	var cfg = ConfigFile.new()
-	if cfg.load(SETTINGS_PATH) != OK: return 0
-	var s = cfg.get_value("display", "date_state", 0)
-	return s if s >= 0 and s < DATE_TOTAL_STATES else 0
+			font_idx = i
+			break
+	var date_s = cfg.get_value("display", "date_state", 0)
+	var date_state = date_s if date_s >= 0 and date_s < DATE_TOTAL_STATES else 0
+	return [font_idx, date_state]
 
 func _scan_fonts():
 	var size_lookup: Dictionary = {}
@@ -224,10 +220,8 @@ func _apply_date_state():
 	var text_sz = _clock_font.get_string_size("0000")
 	var clock_center_x = 1024.0 / 2.0
 	var clock_center_y = 768.0 / 2.0
-#	_debug_clock_rect.margin_left   = clock_center_x - text_sz.x / 2.0
-#	_debug_clock_rect.margin_right  = clock_center_x + text_sz.x / 2.0
-#	_debug_clock_rect.margin_top    = clock_center_y - text_sz.y / 2.0
-#	_debug_clock_rect.margin_bottom = clock_center_y + text_sz.y / 2.0
+	_debug_clock_rect.rect_position = Vector2(clock_center_x - text_sz.x / 2.0, clock_center_y - text_sz.y / 2.0)
+	_debug_clock_rect.rect_size = text_sz
 	if not visible:
 		return
 	var text_height = text_sz.y
@@ -243,7 +237,6 @@ func _apply_date_state():
 		_date_label.margin_bottom = _date_label.margin_top + DATE_LABEL_HEIGHT
 		_date_label.valign = Label.VALIGN_TOP
 	_update_date_text()
-
 
 func _ordinal(n: int) -> String:
 	if n in [11, 12, 13]: return str(n) + "th"
@@ -276,7 +269,3 @@ func _print_input(event):
 		log_label.add_text("Gamepad Button: " + str(event.button_index) + "\n")
 	elif event is InputEventMouseButton and event.pressed:
 		log_label.add_text("Mouse Button: " + str(event.button_index) + "\n")
-
-func _isKeyOrButton(event, key, button):
-	return ((event is InputEventKey and event.pressed and not event.echo and event.scancode == key) or
-		(event is InputEventJoypadButton and event.pressed and event.button_index == button))
