@@ -31,6 +31,7 @@ func play_boot():
 	_tweener.open_both_eyes(0.1, 3.4)
 	_tweener.close_both_eyes(0.1, 3.5)
 	_tweener.open_clock(0.1, 3.6)
+	_tweener.fade_date_in(0.3, 3.6)
 	_tween.start()
 
 
@@ -41,6 +42,7 @@ func play_peek():
 	_tween.stop_all()
 	_tweener.reset_pending()
 	_tweener.close_clock(0.1, 0.0)
+	_tweener.fade_date_out(0.1, 0.0)
 	
 	_tweener.open_both_eyes(0.05, 0.05, 0.1)
 	_tweener.scale_eyes(0.01, 0, 1.2)
@@ -64,6 +66,7 @@ func play_peek():
 	_tweener.open_both_eyes(0.1, 7.8)
 	_tweener.close_both_eyes(0.1, 7.9)
 	_tweener.open_clock(0.1, 8)
+	_tweener.fade_date_in(0.1, 8)
 
 	_tween.start()
 
@@ -74,6 +77,8 @@ func play_happy():
 	_tween.stop_all()
 	_tweener.reset_pending()
 	_tweener.close_clock(0.1, 0.0)
+	_tweener.fade_date_out(0.1, 0.0)
+	
 	_tweener.open_both_eyes(0.1, 0.1)
 	_tweener.scale_eyes(0.4, 0.4, 1.4, Tween.TRANS_QUART, Tween.EASE_OUT)
 	_tweener.scale_eyes_from_center(0.4, 0.4, 1.2, Tween.TRANS_QUART, Tween.EASE_OUT)
@@ -85,6 +90,7 @@ func play_happy():
 	_tweener.shift_eyes_y(0.3, 1.95, 0, Tween.TRANS_QUART, Tween.EASE_OUT)
 	_tweener.close_both_eyes(0.1, 3)
 	_tweener.open_clock(0.1, 3.1)
+	_tweener.fade_date_in(0.1, 3.1)
 	_tween.start()
 	
 
@@ -95,6 +101,8 @@ func play_follow():
 	_tween.stop_all()
 	_tweener.reset_pending()
 	_tweener.close_clock(0.1, 0.0)
+	_tweener.fade_date_out(0.1, 0.0)
+	
 	_tweener.open_both_eyes(0.1, 0.1)
 
 	_tweener.close_both_eyes(0.1, 0.4)
@@ -113,4 +121,5 @@ func play_follow():
 	
 	_tweener.close_both_eyes(0.1, 6)
 	_tweener.open_clock(0.1, 6)
+	_tweener.fade_date_in(0.1, 6)
 	_tween.start()

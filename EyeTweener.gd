@@ -3,6 +3,7 @@ extends Node
 var _tween: Tween
 var _eyes           # Eyes node
 var _clock_label: Label
+var _date_label: Label
 
 var _pending: Dictionary = {}
 var _pending_eye_own_scale: Dictionary = {}    # Panel -> float (own-center scale, default 1.0)
@@ -10,10 +11,11 @@ var _pending_eye_center_scale: Dictionary = {} # Panel -> float (from-center sca
 var _pending_eye_shift: Dictionary = {}        # Panel -> float (x pixel offset, default 0.0)
 var _pending_eye_shift_y: Dictionary = {}      # Panel -> float (y pixel offset, default 0.0)
 
-func setup(tween: Tween, eyes, clock_label: Label):
+func setup(tween: Tween, eyes, clock_label: Label, date_label: Label):
 	_tween = tween
 	_eyes  = eyes
 	_clock_label = clock_label
+	_date_label  = date_label
 
 func reset_pending():
 	_pending.clear()
@@ -86,6 +88,35 @@ func close_clock(duration: float, delay: float, target: float = 0.0,
 func open_clock(duration: float, delay: float, target: float = 1.0,
 				trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
 	_tween_scale_y(_clock_label, duration, delay, target, trans, ease_type)
+
+func fade_clock_out(duration: float, delay: float, target: float = 0.0,
+					trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	var from_a = _pending.get("clock_alpha", _clock_label.modulate.a)
+	_tween.interpolate_property(_clock_label, "modulate:a",
+		from_a, target, duration, trans, ease_type, delay)
+	_pending["clock_alpha"] = target
+
+func fade_clock_in(duration: float, delay: float, target: float = 1.0,
+				   trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	var from_a = _pending.get("clock_alpha", _clock_label.modulate.a)
+	_tween.interpolate_property(_clock_label, "modulate:a",
+		from_a, target, duration, trans, ease_type, delay)
+	_pending["clock_alpha"] = target
+
+func fade_date_out(duration: float, delay: float, target: float = 0.0,
+				   trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	var from_a = _pending.get("date_alpha", _date_label.modulate.a)
+	_tween.interpolate_property(_date_label, "modulate:a",
+		from_a, target, duration, trans, ease_type, delay)
+	_pending["date_alpha"] = target
+
+func fade_date_in(duration: float, delay: float, target: float = 1.0,
+				  trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
+	var from_a = _pending.get("date_alpha", _date_label.modulate.a)
+	_tween.interpolate_property(_date_label, "modulate:a",
+		from_a, target, duration, trans, ease_type, delay)
+	_pending["date_alpha"] = target
+
 
 func open_left_eye(duration: float, delay: float, target: float = 1.0,
 				   trans: int = Tween.TRANS_SINE, ease_type: int = Tween.EASE_IN_OUT):
