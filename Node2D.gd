@@ -18,6 +18,8 @@ const _FONT_TABLE: Array = [
 ]
 const DEFAULT_FONT_SIZE: int = 412
 
+const SETTINGS_PATH = "user://settings.cfg"
+
 const EXIT_BUTTON = 8   # Adjust if your controller uses a different index
 
 const A_BUTTON = 1
@@ -62,7 +64,8 @@ func _ready():
 	_scan_fonts()
 	_clock_font = DynamicFont.new()
 	if _fonts.size() > 0:
-		_apply_font(0)
+		_font_index = _load_font_index_from_settings()
+		_apply_font(_font_index)
 	clock_label.set("custom_fonts/font", _clock_font)
 	clock_label.rect_scale = Vector2(1, 0)
 	_eye_animations.play_boot()
@@ -100,10 +103,27 @@ func _input(event):
 		if _fonts.size() > 0:
 			_font_index = (_font_index - 1 + _fonts.size()) % _fonts.size()
 			_apply_font(_font_index)
+			_save_settings()
 	elif _isKeyOrButton(event, KEY_DOWN, DPAD_DOWN):
 		if _fonts.size() > 0:
 			_font_index = (_font_index + 1) % _fonts.size()
 			_apply_font(_font_index)
+			_save_settings()
+
+func _save_settings():
+	var cfg = ConfigFile.new()
+	cfg.set_value("display", "font_name", _fonts[_font_index].path.get_file())
+	cfg.save(SETTINGS_PATH)
+
+func _load_font_index_from_settings() -> int:
+	var cfg = ConfigFile.new()
+	if cfg.load(SETTINGS_PATH) != OK:
+		return 0
+	var saved_name = cfg.get_value("display", "font_name", "")
+	for i in range(_fonts.size()):
+		if _fonts[i].path.get_file() == saved_name:
+			return i
+	return 0
 
 func _scan_fonts():
 	var size_lookup: Dictionary = {}
